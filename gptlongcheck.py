@@ -13,28 +13,54 @@ def plurality(choice_counts):
 			max_count = i
 	return chr(max_count + 65)
 
-def surprisingly_popular(choice_counts, percents):
-	avg_percs = np.zeros(len(percents[0]))
-	for i in range(len(avg_percs)):
-		summ = 0
-		for j in range(len(percents)):
-			summ += percents[j][i]
-		i_avg = summ / len(percents)
-		avg_percs[i] = i_avg
-	#print(str(avg_percs[i]))
+def surprisingly_popular(choice_counts, data):
+	relevant = []
+	total_votes = sum(choice_counts)
+	for i in range( len(choice_counts)):
+		if choice_counts[i] > 0:
+			relevant.append(i)
+	orig_to_relevant = {}
+	for i in range(len(relevant)):
+		orig_to_relevant[relevant[i]] = i
+	
+	relevant_percs = [[] for _ in range( len(relevant))]
+	for data_point in data:
+		relevant_percs[orig_to_relevant[data_point[0]]].append(data_point[1])
+	average_percs = np.zeros(len(relevant))
+	for i in range(len(relevant)):
+		average_percs[i] = sum(relevant_percs[i])/len(relevant_percs[i])
+		if average_percs[i] > 1:
+			average_percs[i] = 1
+		if average_percs[i] < 0:
+			average_percs[i] = 0
+	matrix = np.zeros((len(relevant), len(relevant)))
+	for i in range(len(relevant)):
+		for j in range(len(relevant)):
+			if i == j:
+				matrix[i][j] = average_percs[i]
+			else:
+				matrix[i][j] = (1 - average_percs[i])/(len(relevant)-1)
+	scores = np.zeros(len(relevant))
+	for i in range(len(relevant)):
+		score = 0
+		for j in range(len(relevant)):
+			if matrix[j][i] != 0:
+				score += matrix[i][j]/matrix[j][i]
+		score *= choice_counts[relevant[i]]/total_votes
+		scores[i] = score
 
-	actual_percs = [(choice_count / sum(choice_counts)) for choice_count in choice_counts]
-	scores = [actual_percs[i] - avg_percs[i] for i in range(len(choice_counts))]
+	max_ind = 0
+	#print(str(scores))
+	#print(str(scores[0]))
+	#print(str(scores[1]))
+	#print(scores[2])
+	for i in range(len(relevant)):
+		print(str(i))
+		if scores[i] > scores[max_ind]:
+			max_ind = i
+	return chr(relevant[max_ind] + 65)
 
-	#print("actual"+str(actual_percs))
-	#print("avg" + str(avg_percs))
-	#print("score" + str(scores))
 
-	winner = 0
-	for i in range(len(scores)):
-		if scores[i] > scores[winner]:
-			winner = i
-	return chr(winner + 65)
 
 def parse_file(filename, args):
 	#print("hello")
@@ -59,35 +85,42 @@ def parse_file(filename, args):
 		perc = float(unparsed_percent)
 		perc = min(100, perc)
 		perc /= 100
-		data.append((ord(choice), perc))
+		data.append((ord(choice) - 65, perc))
 		total += 1
-	print(str(data))
+	#print(str(data))
 	#print(str(choice_counts))
 	true_answer = chr(correct_answer)
-	#plur_winner = plurality(choice_counts)
-	#sp_winner = surprisingly_popular(choice_counts, data)
-	#print(str([true_answer, plur_winner, sp_winner]))
+	plur_winner = plurality(choice_counts)
+	sp_winner = surprisingly_popular(choice_counts, data)
+	print(str([true_answer, plur_winner, sp_winner]))
 	file.close()
-	#return (true_answer, plur_winner, sp_winner)
+	return (true_answer, plur_winner, sp_winner)
 
 def parse(args):
 	i = 0
 	rows = []
 	while os.path.exists(DATA_PATH + args.folder + "/question" + str(i) + ".txt"):
 		#print("yes")
-		if i == 1:
-			break
 		rows.append(parse_file("question" + str(i) + ".txt", args))
 		i += 1
 	plur_count = 0
 	sp_count = 0
+	print(str(rows))
+	different = []
 	for j in range(len(rows)):
 		if rows[j][0] == rows[j][1]:
 			plur_count += 1
 		if rows[j][0] == rows[j][2]:
 			sp_count += 1
+		if rows[j][1] != rows[j][2]:
+			different.append(j)
 	print(plur_count / len(rows))
 	print(sp_count / len(rows))
+	print(str(different))
+	print("Length: " + str(len(different)))
+	for q in different:
+		print("Question " + str(q))
+		print(str(rows[q]))
 	pass
 
 
