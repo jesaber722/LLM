@@ -1,0 +1,11 @@
+Both correct: 334
+SP correct, Plurality incorrect: 13
+SP incorrect, Plurality correct: 72
+Neither correct: 346
+
+Number of agreements: 646
+Number of disagreements: 119
+
+Implementation Notes:
+* Number of erroneous (skipped) question files: 52
+* Occasional bad formatting manually removed (e.g. % or \n symbol)

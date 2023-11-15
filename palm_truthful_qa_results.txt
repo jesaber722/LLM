@@ -1,0 +1,12 @@
+Both correct: 254
+SP correct, Plurality incorrect: 6
+SP incorrect, Plurality correct: 138
+Neither correct: 388
+
+Number of agreements: 491
+Number of disagreements: 295
+
+Implementation Notes:
+* Number of erroneous (skipped) question files: 31
+* Number of percents given often don't match number of answer choices
+(Probably want to make prompt clearer or add more examples)
